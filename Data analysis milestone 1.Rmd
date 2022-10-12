@@ -1,6 +1,7 @@
 ---
 title: "Mini Data-Analysis Deliverable 1"
 output: github_document
+number_sections: true
 ---
 
 # Welcome to your (maybe) first-ever data analysis project!
@@ -13,15 +14,21 @@ And hopefully the first of many. Let's get started:
 
     install.packages("devtools")
     devtools::install_github("UBC-MDS/datateachr")
+    
+
+    
+    
 
 2.  Load the packages below.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(datateachr)
 library(tidyverse)
+
+
 ```
 
-3.  Make a repository in the <https://github.com/stat545ubc-2022> Organization. You will be working with this repository for the entire data analysis project. You can either make it public, or make it private and add the TA's and Lucy as collaborators. A link to help you create a private repository is available on the #collaborative-project Slack channel. 
+3. Make a repository in the <https://github.com/stat545ubc-2022> Organization. You will be working with this repository for the entire data analysis project. You can either make it public, or make it private and add the TA's and Lucy as collaborators. A link to help you create a private repository is available on the #collaborative-project Slack channel. 
 
 # Instructions
 
@@ -76,39 +83,97 @@ And that is exactly the first thing that you will do!
 
 1.1 Out of the 7 datasets available in the `datateachr` package, choose **4** that appeal to you based on their description. Write your choices below:
 
-**Note**: We encourage you to use the ones in the `datateachr` package, but if you have a dataset that you'd really like to use, you can include it here. But, please check with a member of the teaching team to see whether the dataset is of appropriate complexity. Also, include a **brief** description of the dataset here to help the teaching team understand your data.
-
 <!-------------------------- Start your work below ---------------------------->
 
-1: CHOICE_1\_HERE\
-2: CHOICE_2\_HERE\
-3: CHOICE_3\_HERE\
-4: CHOICE_4\_HERE
+1. cancer_sample
+2. flow_sample
+3. parking_meters
+4. vancouver_trees
 
 <!----------------------------------------------------------------------------->
 
 1.2 One way to narrowing down your selection is to *explore* the datasets. Use your knowledge of dplyr to find out at least *3* attributes about each of these datasets (an attribute is something such as number of rows, variables, class type...). The goal here is to have an idea of *what the data looks like*.
 
-*Hint:* This is one of those times when you should think about the cleanliness of your analysis. I added a single code chunk for you below, but do you want to use more than one? Would you like to write more comments outside of the code chunk?
-
 <!-------------------------- Start your work below ---------------------------->
 
 ```{r}
-### EXPLORE HERE ###
-steam_games
+cancer_sample %>% glimpse() # print the data dimension and variables' type
+is_tibble(cancer_sample) # checking the data format
+
 ```
+
+The **cancer_sample** has one binary variable "diagnosis" and remaining 31 variables including different features of images of breast masses biopsy from 569 patients.
+
+```{r}
+flow_sample %>% glimpse() # print the data dimension and variables' type
+is_tibble(flow_sample) # checking the data type
+
+```
+The **flow_sample** contains flow rate in Alberta, Canada. It has 218 observations on 7 different variables including station id, date, flow rate etc.
+
+```{r}
+parking_meters %>% glimpse() # print the data dimension and variables' type
+is_tibble(parking_meters) # checking the data type
+
+
+```
+The **parking_meters** dataset contains information on the rates and time limits for parking meters in Vancouver. Information is shown for entire block faces rather than for individual meters. It has 10032 observations on 22 variables.
+
+
+```{r}
+vancouver_trees %>% glimpse()
+is_tibble(vancouver_trees)
+```
+The **vancouver_trees** dataset includes information about public trees in Vancouver city. It has 146611 observations on 20 different variables including tree id, its location, and other characteristics. 
+
 
 <!----------------------------------------------------------------------------->
 
 1.3 Now that you've explored the 4 datasets that you were initially most interested in, let's narrow it down to 2. What lead you to choose these 2? Briefly explain your choices below, and feel free to include any code in your explanation.
 
 <!-------------------------- Start your work below ---------------------------->
+I feel more interest in **flow_sample** and **cancer_sample** data sets for further exploration. Let's explore the data sets-
+
+
+
+```{r, message=FALSE, warning=FALSE}
+
+library(lubridate)
+Dat1 <- datateachr::flow_sample %>% 
+  select(station_id, year, month, day) %>% 
+  mutate(Date=make_datetime(year, month, day)) %>% # making date variable from year, month and year
+  arrange(Date) %>% 
+  filter(!is.na(Date))
+  
+
+Dat1 %>% 
+  slice_head(n=2) # printing the first date 
+
+Dat1 %>% 
+  slice_tail(n=2) # printing the last date 
+
+unique(datateachr::flow_sample$station_id) # identify the unique station
+
+```
+For **flow_sample:** The data has flow rates from 1909 to 2018 collected from a single locations. I am interested to explore the flow rate trend in Alberta over the years. In addition, I might apply a forecasting method for the future years. That's why I feel more interest in flow_sample than others. 
+
+```{r}
+datateachr::cancer_sample %>% 
+  group_by(diagnosis) %>% 
+  summarise(n = n()) %>% 
+  mutate(percent = n/sum(n))
+
+```
+For **cancer_sample:** The data set has 569 patients' diagnosis status of breast cancer (either malignant or benign) where 37\% patients are malignant and  63\% are benign. Each patient have different information on their biopsy images. I strongly feel interest in exploring the relationship between diagnosis status and other characteristics.
 
 <!----------------------------------------------------------------------------->
 
 1.4 Time for the final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with each dataset. Note them down below, and make your final choice based on what seems more interesting to you!
 
 <!-------------------------- Start your work below ---------------------------->
+
+
+**Final choice:** Since cancer_sample has binary outcome variables (if the patient is diagnosed as *malignant*  or *benign*), I would prefer to choose **cancer_sample** data set. I am interested to explore the association between diagnosis status and patient's different characteristics. 
 
 <!----------------------------------------------------------------------------->
 
@@ -136,6 +201,86 @@ If we rewind and go back to the learning objectives, you'll see that by the end 
 2.2 For each of the 4 exercises that you complete, provide a *brief explanation* of why you chose that exercise in relation to your data (in other words, why does it make sense to do that?), and sufficient comments for a reader to understand your reasoning and code.
 
 <!-------------------------- Start your work below ---------------------------->
+To explore the association between diagnosis and other variables, we need to explore the following things-
+
+  * We will make analytic data first. Here I am choosing *ID, diagnosis, radius_mean, texture_mean, and perimeter_mean* five variables for analytic data set.
+  
+```{r}
+Dat_F <- datateachr::cancer_sample %>% 
+          select(ID, diagnosis, radius_mean, texture_mean, perimeter_mean)
+
+Dat_F %>% 
+  slice_head(n=5)
+
+```
+**Comments:** The analytic data *Dat_F* contains all observations on five variables only.
+  
+  * The radius_mean is a numeric variable, we are exploring its shape.    
+      + A histogram can be used for that.
+      
+```{r}
+Dat_F %>% 
+ggplot(mapping=aes(x = radius_mean)) + 
+    geom_histogram(aes(y =..density..), fill = "blue") + # histogram is based on density, not on count
+  stat_bin(bins = 50)
+
+
+Dat_F %>% 
+ggplot(mapping=aes(x = radius_mean)) + 
+    geom_histogram(aes(y =..density..), fill = "blue") + # histogram is based on density, not on count
+  stat_bin(bins = 20)
+
+
+Dat_F %>% 
+ggplot(mapping=aes(x = radius_mean)) + 
+    geom_histogram(aes(y =..density..), fill = "blue") + # histogram is based on density, not on count
+  stat_bin(bins = 15)
+
+
+
+```      
+
+**Comments:** It is  moderately right skewed. We used 3 different number of bins to check the shape clearly. I suppose 20 bins graph shows better shape. 
+
+
+  
+  
+
+  
+  * We need to check the outliers in the covariates. If there exists, we need to handle the outliers before exploring the association.
+  
+      + A boxplot can be helpfull to detect the outliers.
+      
+
+```{r}
+Dat_F %>% ggplot(mapping = aes(x=diagnosis, y=radius_mean)) +  # boxplot for radius_mean within each diagnosis status.
+  geom_boxplot()
+
+
+```
+
+
+**Comments:** The boxplot shows a lot of information. It indicates that there are some mild outliers in radius_mean covariate.       
+      
+      
+      
+  * We need to explore if there are some missing values in the data set or not.
+  
+      + The table and plot shows the frequency of missing values.
+      
+  
+
+```{r}
+
+# Identifying missing values in each variable and plotting them  
+
+VIM::aggr(Dat_F, prop = FALSE, combined = TRUE, numbers = TRUE, sortVars = TRUE, sortCombs = TRUE)
+
+```
+
+
+**Comments:** We found no missing values for the four variables in my analytic data set.
+
 
 <!----------------------------------------------------------------------------->
 
@@ -144,6 +289,19 @@ If we rewind and go back to the learning objectives, you'll see that by the end 
 So far, you have chosen a dataset and gotten familiar with it through exploring the data. Now it's time to figure out 4 research questions that you would like to answer with your data! Write the 4 questions and any additional comments at the end of this deliverable. These questions are not necessarily set in stone - TAs will review them and give you feedback; therefore, you may choose to pursue them as they are for the rest of the project, or make modifications!
 
 <!--- *****START HERE***** --->
+
+### Research question
+
+1. What is the correlation between  radius_mean, texture_mean, and perimeter_mean? 
+
+2. What are the summary of radius_mean between diagnosis levels?
+
+3. What are the summary of texture_mean between diagnosis levels?
+
+4. What are the summary of perimeter_mean between diagnosis levels?
+
+
+
 
 # Task 4: Process and summarize your data (13 points)
 
@@ -173,6 +331,121 @@ Make sure it's clear what research question you are doing each operation for!
 
 <!------------------------- Start your work below ----------------------------->
 
+**1. What is the correlation between  radius_mean, texture_mean, and perimeter_mean?**
+
+```{r}
+Dat_F %>% 
+  select(radius_mean, texture_mean, perimeter_mean) %>% 
+  cor() # It creates a correlation coefficient matrix of three variables. 
+
+
+# We can make a correlation plot that shows nicely 
+
+Dat_F %>% 
+  select(radius_mean, texture_mean, perimeter_mean) %>% 
+  cor() %>% # It creates a correlation coefficient matrix of three variables. 
+  corrplot::corrplot(method="color", 
+                     addCoef.col = "black",  # Add coefficient of correlation
+                     tl.col="black", tl.srt=45) #Text label color and rotation
+
+
+```
+
+**Comments:** The correlation be stronger if the coefficient is close to 1 or -1. Since we found coefficients close to zero, it shows weak correlation between radius, texture and perimeter mean in patients. This suggests that three variables can contribute independently in the model.  
+
+
+
+**2. What are the summary of radius_mean between diagnosis levels?**
+
+
+```{r}
+
+# diagnosis-wise summary for the variable  radius_mean
+
+(Mod <- Dat_F %>% 
+    group_by(diagnosis) %>% 
+    summarise(mean = round(mean(radius_mean), digits = 2), # making the summary based on grouping
+            sd = round(sd(radius_mean), digits = 2),
+            minimum = min(radius_mean),
+            maximum = max(radius_mean),
+            median = median(radius_mean)))
+
+
+# Demonstrating mean and statndard deviation graphically
+Mod %>% 
+  ggplot2::ggplot(aes(x=diagnosis, y=mean, fill=diagnosis)) + 
+  geom_bar(stat="identity", color="black", position=position_dodge(),
+           alpha=0.2) + # controlling the color intensity
+  labs(title="Error bar plot of radius mean in diagnosis level",
+        x ="Diagnosis level", y = "Average radius") +
+  geom_errorbar(aes(ymin=mean, ymax=mean+sd), width=.2, # error bar width 
+                 position=position_dodge(0.9)) # error bar position on the bar
+
+
+
+
+```
+
+**Comments:** The  table and graphs shows the *malignant* patients are different from *benign* patients with respect to summary measures of radius mean. 
+
+
+
+**3. What are the summary of texture_mean between diagnosis levels?**
+
+
+```{r}
+# diagnosis-wise summary for the variable  texture_mean
+
+(Mod1 <- Dat_F %>% 
+    group_by(diagnosis) %>% 
+    summarise(mean = round(mean(texture_mean), digits = 2), # making the summary based on grouping
+            sd = round(sd(texture_mean), digits = 2),
+            minimum = min(texture_mean),
+            maximum = max(texture_mean),
+            median = median(texture_mean)))
+
+
+# Demonstrating  the summary graphically
+
+Dat_F %>% ggplot(mapping = aes(x=diagnosis, y=texture_mean, fill = diagnosis)) + # boxplot for texture_mean within each diagnosis status.
+ scale_y_continuous(trans='log10') + 
+ geom_boxplot()  
+
+
+```
+
+**Comments:** The  results show the *malignant* patients are different from *benign* patients with respect to texture. Therefore, the more texture mean, the chance of being malignant. 
+
+
+
+**4. What are the summary of perimeter_mean between diagnosis levels?**
+
+```{r}
+# diagnosis-wise summary for the variable  perimeter_mean
+
+(Mod2 <- Dat_F %>% 
+    group_by(diagnosis) %>% 
+    summarise(mean = round(mean(perimeter_mean), digits = 2), # making the summary based on grouping
+            sd = round(sd(perimeter_mean), digits = 2),
+            minimum = min(perimeter_mean),
+            maximum = max(perimeter_mean),
+            median = median(perimeter_mean)))
+
+
+# Demonstrating  the summary graphically
+
+Dat_F %>% ggplot(mapping = aes(x=diagnosis, y=perimeter_mean, fill = diagnosis)) + # boxplot for texture_mean within each diagnosis status.
+  geom_boxplot(outlier.shape = NA) + # avoiding the outlier
+   geom_jitter(width = 0.2) # points are demonstrated along the boxplot
+
+
+
+```
+
+**Comments:** The  results show the *malignant* patients are different from *benign* patients with respect to perimeter also. The points show that, the variation in *malignant* is also higher than the  *benign* with respect to perimeter.
+
+
+
 <!----------------------------------------------------------------------------->
 
 ### 1.2 (3 points)
@@ -180,6 +453,14 @@ Make sure it's clear what research question you are doing each operation for!
 Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
 
 <!-------------------------- Start your work below ---------------------------->
+ 
+ * We found weak correlation between three covariates, radius, texture and perimeter mean. 
+ 
+ * But radius, texture and perimeter mean are higher for malignant patients mean than benign patients. Thus radius, texture and perimeter mean are associated with diagnosis status.
+
+ * But we don't know if this association is true for the population or not. We need to test this association to conclude that. In order to test, we have to apply some regression models. [We didn't reach here yet]
+ 
+ * As far exploration, the 4th research question seems more interesting since diagnosis levels have more gap with respect to perimeter mean. Also the graph shows high variability in malignant patients than benign.
 
 <!----------------------------------------------------------------------------->
 
