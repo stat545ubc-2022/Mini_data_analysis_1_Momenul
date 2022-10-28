@@ -22,6 +22,10 @@ This project is to analyse a data in R. It contains two milestones. The first mi
   * Concluding with answer from model fit
 
 ## Files and folders
+It has 3 folders:
+  1. `Data analysis milestone 1': It contains all the graphs and summary tables produced in Milestone 1
+  2. `Data analysis milestone 2': It contains all the graphs and summary tables produced in Milestone 2
+  3. `output': It has two files, a summary table from milestone 1 and fitted model object from milestone 2 
 
  
  
