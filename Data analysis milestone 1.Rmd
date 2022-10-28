@@ -334,6 +334,7 @@ Make sure it's clear what research question you are doing each operation for!
 **1. What is the correlation between  radius_mean, texture_mean, and perimeter_mean?**
 
 ```{r}
+
 Dat_F %>% 
   select(radius_mean, texture_mean, perimeter_mean) %>% 
   cor() # It creates a correlation coefficient matrix of three variables. 
@@ -369,7 +370,6 @@ Dat_F %>%
             minimum = min(radius_mean),
             maximum = max(radius_mean),
             median = median(radius_mean)))
-
 
 # Demonstrating mean and statndard deviation graphically
 Mod %>% 
