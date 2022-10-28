@@ -26,6 +26,11 @@ It has 3 folders:
   1. `Data analysis milestone 1': It contains all the graphs and summary tables produced in Milestone 1
   2. `Data analysis milestone 2': It contains all the graphs and summary tables produced in Milestone 2
   3. `output': It has two files, a summary table from milestone 1 and fitted model object from milestone 2 
+ Again, It has two files (one is .Rmd, another one .md) for each milestone.
+ 
+ ## How to start
+ Start with the milestine 1 and then milestone 2.
+ 
 
  
  
